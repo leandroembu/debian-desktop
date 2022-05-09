@@ -1,0 +1,7 @@
+---
+
+- name: Pull docker images
+  community.docker.docker_image:
+    name: "{{ item }}"
+    source: pull
+  loop: "{{ dbs_docker_images }}"

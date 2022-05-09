@@ -1,0 +1,32 @@
+---
+
+- name: restart openntpd
+  ansible.builtin.service:
+    name: openntpd
+    state: restarted
+
+- name: restart ntp
+  ansible.builtin.service:
+    name: ntp
+    state: restarted
+
+- name: restart cron
+  ansible.builtin.service:
+    name: cron
+    state: restarted
+
+- name: restart rsyslog
+  ansible.builtin.service:
+    name: rsyslog
+    state: restarted
+
+- name: update tzdata
+  ansible.builtin.command: dpkg-reconfigure -f noninteractive tzdata
+
+- name: locale-gen
+  ansible.builtin.command: locale-gen
+
+- name: reload networking
+  ansible.builtin.service:
+    name: networking
+    state: reloaded

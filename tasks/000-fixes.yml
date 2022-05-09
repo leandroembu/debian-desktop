@@ -1,0 +1,6 @@
+---
+
+- name: FAIL | Check OS name
+  ansible.builtin.fail:
+    msg: 'Cannot get OS version name. Unstable {{ ansible_distribution }} release? Please try `apt-get dist-upgrade`.'
+  when: ansible_distribution_release == 'n/a' or ansible_distribution_release == 'NA'

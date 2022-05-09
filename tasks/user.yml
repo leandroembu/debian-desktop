@@ -1,0 +1,56 @@
+---
+
+- name: GROUP | Add groups to the system
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    system: "{{ item.system | default('no') }}"
+  loop: "{{ dbs_groups }}"
+  when: item.state is not defined or item.state == 'present'
+
+- name: USER | Add users to the system
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    shell: "{{ item.shell | default(omit) }}"
+    comment: "{{ item.comment | default('') }}"
+    groups: "{{ item.groups | default('') }}"
+    home: "{{ item.home | default(omit) }}"
+    createhome: "{{ item.createhome | default('yes') }}"
+    system: "{{ item.system | default('no') }}"
+    state: "{{ item.state | default('present') }}"
+    password: "{% if item.password is defined %}{{ item.password }}{% elif item.clear_password is defined%}{{ item.clear_password | password_hash('sha512') }}{% else %}{{ omit }}{% endif %}"
+    update_password: "{{ item.update_password | default(omit) }}"
+  with_items: "{{ dbs_users }}"
+
+- name: GROUP | Delete groups to the system
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    state: absent
+  with_items: "{{ dbs_groups }}"
+  when: item.state is defined and item.state == 'absent'
+
+- name: USER | Add to group
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    group: "{{ item.group }}"
+  with_items: "{{ dbs_users }}"
+  when: >
+    item.group is defined and
+    (item.state is not defined or item.state == 'present')
+
+- name: AUTHORIZED_KEY | Install SSH public key to system users
+  ansible.posix.authorized_key:
+    user: "{{ item.0.name }}"
+    key: "{{ item.1 }}"
+  with_subelements:
+    - "{{ dbs_users }}"
+    - ssh_keys
+    - flags:
+      skip_missing: true
+  when: item.0.state is not defined or item.0.state == 'present'
+
+- name: TEMPLATE | Create sudoers file
+  ansible.builtin.template:
+    src: etc/sudoers.d/ansible.j2
+    dest: /etc/sudoers.d/ansible
+    mode: 0440
+    validate: 'visudo -cf %s'

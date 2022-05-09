@@ -1,0 +1,5 @@
+---
+
+- name: Install python packages from pip
+  pip:
+    name: "{{ dbs_pip_packages }}"

@@ -1,0 +1,47 @@
+---
+
+- hosts: all
+  vars:
+    dbs_timezone: 'America/Sao_Paulo'
+    dbs_uninstall_packages:
+      - 'atop'
+    dbs_groups:
+      - name: 'administrator'
+      - name: 'superdaemon'
+        system: true
+      - name: 'regis'
+        state: 'absent'
+    dbs_users:
+      - name: 'leandro'
+        sudo: true
+        ssh_keys:
+          - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC69UwcNtf/ggwmdh3chtj2aYkw/lvGwLLi86Nyr0B5ZWpOOQKJ2PsejgnUKSFL9z6yElR/WUEqgQZmVii8YLIR2ii/4HsJdIRP4vFF5Ux5eVOHZTPTtc7lSgqfAZewGQr49Av+lRz2r76GFRhEpc4QD0fij8WuRZXiADySzw23IDvpQ1AQphyyvTcGDLxvXbaZkgIAAs6BLIRWOxX3EHQYzglntmuDXzl3S1gZj14dxsEMqID59wYjQMQG2LAeIC407u7tG+ibLJjW6bFoH5pNWtb4vUqeHD5aOH5cC7z/pj/9jGYVqrQpRTWwsoTMh9FfkINQ8n49rLUq1OH+G6a+CtObRthHrPZeSVBG13Je9kVn0VMwNqcQ4KCL6cxARguFGCvulnRo/RYJVHSZGP00fZ3BVaO+UEKPdYqGhbQachRlR1pAqjQeVe5UemqsY1sXrPNqe1kCytakrD3g9ONLvsOAC++qboSmEQcPOg3lN1d+UbnWFzAvka6PP3TJGCdsLHsrNVICXk4ubvXSozWLzr9QqmV1UzQDqFu5KFam3YIhMkQ9E8XfgQ4FZxhcsn52JuwYqfn5esCOd08B9YU7jpXQjt/6jLRQn7kMJqUheCd7gK02bt1dWoNE6Gf9T+DCHyJ/KSHEEun3aAcudG0WF3PtoB8928r+VTD1uiEh3w== leandroramos@disroot.org'
+      - name: 'hx'
+        group: 'www-data'
+        groups: 'superdaemon'
+        shell: '/usr/bin/bash'
+        sudo: false
+        clear_password: '1a2b3c'
+        update_password: 'on_create'
+      - name: 'gunther'
+        password: '$6$fFXafeiTssSG3LX3$/ji4TrTVWJwQdgKeLs69OtmXbpe6faCw7XCO5xzHSv3FqVdHA0qjgs01ZovYQBt./5vH5eUVT7XeOpb0PRtQh/'   # tralala
+        shell: '/bin/bash'
+      - name: 'regis'
+        state: 'absent'
+    dbs_ntp_pkg: 'ntp'
+    dbs_locales:
+      - 'en_US.UTF-8'
+      - 'fr_FR.UTF-8'
+  roles:
+    - ../../
+  post_tasks:
+    - name: -- TEST -- COMMAND | Get timezone
+      ansible.builtin.command: cat /etc/timezone
+      changed_when: false
+      register: ntz
+    - name: -- TEST -- ASSERT | We have good timezone
+      ansible.builtin.assert:
+        that: "ntz.stdout == dbs_timezone"
+    - name: -- TEST -- COMMAND | Date
+      ansible.builtin.command: date
+      changed_when: false

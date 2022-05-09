@@ -1,0 +1,4 @@
+" {{ ansible_managed }} 
+syntax on
+set bg=dark
+set mouse=

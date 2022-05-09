@@ -1,0 +1,4 @@
+---
+# Package ohai has unmet dependencies on bullseye
+#dbs_distro_packages: ["ohai"]
+dbs_distro_packages: []

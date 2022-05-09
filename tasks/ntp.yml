@@ -1,0 +1,30 @@
+---
+
+- name: ASSERT | validated package
+  ansible.builtin.assert:
+    that: 'dbs_ntp_pkg == "openntpd" or dbs_ntp_pkg == "ntp"'
+
+- name: APT | Install NTP daemon
+  ansible.builtin.apt:
+    pkg: "{{ dbs_ntp_pkg }}"
+    state: present
+
+- name: TEMPLATE | Deploy OpenNTPd configuration file
+  ansible.builtin.template:
+    src: etc/openntpd/ntpd.conf.j2
+    dest: /etc/openntpd/ntpd.conf
+    mode: 0644
+    owner: root
+    group: root
+  notify: restart openntpd
+  when: dbs_ntp_pkg == 'openntpd'
+
+- name: TEMPLATE | Deploy NTPd configuration file
+  ansible.builtin.template:
+    src: etc/ntp.conf.j2
+    dest: /etc/ntp.conf
+    mode: 0644
+    owner: root
+    group: root
+  notify: restart ntp
+  when: dbs_ntp_pkg == 'ntp'

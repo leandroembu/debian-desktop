@@ -1,0 +1,47 @@
+---
+
+- name: IMPORT_TASKS | Some fixes
+  ansible.builtin.import_tasks: 000-fixes.yml
+
+- name: INCLUDE_VARS | OS
+  ansible.builtin.include_vars: "{{ ansible_distribution }}/main.yml"
+
+- name: INCLUDE_VARS | Related to OS version
+  ansible.builtin.include_vars: "{{ ansible_distribution }}/{{ ansible_distribution_release }}.yml"
+
+- name: IMPORT_TASKS | Prepare system
+  ansible.builtin.import_tasks: prepare.yml
+
+- name: IMPORT_TASKS | Configure APT
+  ansible.builtin.import_tasks: apt.yml
+
+- name: IMPORT_TASKS | Install pip packages
+  ansible.builtin.import_tasks: pip.yml
+
+#- name: IMPORT_TASKS | Docker images
+#  ansible.builtin.import_tasks: docker.yml
+
+- name: IMPORT_TASKS | Manage system users
+  ansible.builtin.import_tasks: user.yml
+
+- name: INCLUDE_TASKS | Set hostname
+  ansible.builtin.include_tasks: hostname.yml
+  when: dbs_set_hostname and not dbs_is_docker
+
+- name: TIMEZONE | Set
+  community.general.timezone:
+    name: "{{ dbs_timezone }}"
+  when: dbs_set_timezone
+  notify:
+    - 'restart cron'
+
+- name: INCLUDE_TASKS | Manage locales
+  ansible.builtin.include_tasks: locale.yml
+  when: dbs_set_locale
+
+- name: INCLUDE_TASKS | Install NTP damon
+  ansible.builtin.include_tasks: ntp.yml
+  when: dbs_set_ntp
+
+- name: IMPORT_TASKS | Misc system configuration
+  ansible.builtin.import_tasks: system.yml
